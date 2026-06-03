@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Blogr — A Modern Publishing Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Nunito+Sans:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --sky-light: #e0f4fd;
+    --sky-mid:   #7ec8e3;
+    --sky-deep:  #2196c4;
+    --sky-dark:  #0d4f6e;
+    --sky-hero:  #0b3d54;
+    --white:     #ffffff;
+    --text-dark: #1a3a4a;
+    --text-mid:  #4a7a94;
+    --text-light:#8ab8cc;
+    --accent:    #e8f7fd;
+    --cta-red:   #ff6b6b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    color: var(--text-dark);
+    background: var(--white);
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    padding: 2.4rem 5vw;
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    flex: 1;
+  }
+
+  .nav-links > li { position: relative; }
+
+  .nav-links > li > button,
+  .nav-links > li > a {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.85);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links > li > button:hover,
+  .nav-links > li > a:hover { color: var(--white); }
+
+  .chevron {
+    width: 10px; height: 6px;
+    border-left: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(-45deg) translateY(-2px);
+    transition: transform 0.25s;
+    display: inline-block;
+  }
+  .open .chevron { transform: rotate(135deg) translateY(-2px); }
+
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 14px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 12px 40px rgba(13,79,110,0.18);
+    padding: 1rem 0;
+    min-width: 160px;
+    list-style: none;
+  }
+  .dropdown.visible { display: block; }
+  .dropdown li a {
+    display: block;
+    padding: 0.55rem 1.5rem;
+    color: var(--text-dark);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .dropdown li a:hover { color: var(--sky-deep); }
+
+  .nav-cta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 1.4rem;
+  }
+  .nav-cta a { color: rgba(255,255,255,0.88); font-size: 0.92rem; font-weight: 600; text-decoration: none; transition: color 0.2s; }
+  .nav-cta a:hover { color: var(--white); }
+  .btn-signup {
+    background: var(--white);
+    color: var(--sky-deep) !important;
+    padding: 0.6rem 1.6rem;
+    border-radius: 50px;
+    font-weight: 700 !important;
+    transition: background 0.2s, color 0.2s, transform 0.2s !important;
+  }
+  .btn-signup:hover { background: var(--sky-light) !important; transform: translateY(-1px); }
+
+  /* Hamburger */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: pointer;
+    margin-left: auto;
+    background: none;
+    border: none;
+    padding: 4px;
+  }
+  .hamburger span {
+    display: block; width: 26px; height: 2px;
+    background: var(--white);
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+  .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+  .hamburger.active span:nth-child(2) { opacity: 0; }
+  .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+
+  /* Mobile menu */
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(11,61,84,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    padding: 5rem 1.5rem 2rem;
+    flex-direction: column;
+    align-items: center;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 380px;
+  }
+  .mobile-menu-card ul { list-style: none; }
+  .mobile-menu-card > ul > li { border-bottom: 1px solid var(--sky-light); }
+  .mobile-menu-card > ul > li:last-child { border-bottom: none; }
+  .mobile-menu-card button.m-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    padding: 1rem 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .mobile-menu-card .m-dropdown { display: none; padding-bottom: 0.75rem; }
+  .mobile-menu-card .m-dropdown.open { display: block; }
+  .mobile-menu-card .m-dropdown a {
+    display: block;
+    padding: 0.45rem 0.5rem;
+    color: var(--text-mid);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .mobile-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--sky-light);
+    margin-top: 0.5rem;
+  }
+  .mobile-cta a {
+    color: var(--text-dark);
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1rem;
+  }
+  .mobile-cta .btn-m-signup {
+    background: linear-gradient(135deg, var(--sky-deep), var(--sky-dark));
+    color: var(--white);
+    padding: 0.75rem 2.5rem;
+    border-radius: 50px;
+    font-weight: 700;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    background: linear-gradient(160deg, var(--sky-dark) 0%, var(--sky-deep) 55%, #4ab3d8 100%);
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.07;
+    background: var(--white);
+  }
+  .hero-circle:nth-child(1) { width: 600px; height: 600px; right: -180px; top: -180px; }
+  .hero-circle:nth-child(2) { width: 380px; height: 380px; left: -100px; bottom: -80px; }
+  .hero-circle:nth-child(3) { width: 240px; height: 240px; right: 15%; bottom: 10%; }
+  .hero-waves {
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 130px;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 12rem 1.5rem 10rem;
+    max-width: 700px;
+  }
+  .hero-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 1.4rem;
+    letter-spacing: -0.02em;
+    animation: fadeUp 0.9s ease both;
+  }
+  .hero-content p {
+    color: rgba(255,255,255,0.82);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+    animation: fadeUp 0.9s 0.15s ease both;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    animation: fadeUp 0.9s 0.3s ease both;
+  }
+  .btn-primary {
+    background: var(--white);
+    color: var(--sky-deep);
+    padding: 0.85rem 2.2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.25s;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  }
+  .btn-primary:hover { background: var(--sky-light); transform: translateY(-2px); }
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.7);
+    padding: 0.85rem 2.2rem;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.25s;
+  }
+  .btn-outline:hover { border-color: var(--white); background: rgba(255,255,255,0.08); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── DESIGNED FOR ─── */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: center;
+    margin-bottom: 4rem;
+    letter-spacing: -0.02em;
+  }
+  .section-title span { color: var(--sky-deep); }
+
+  section { padding: 6rem 5vw; }
+
+  /* FEATURES GRID */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .feature-card {
+    background: var(--accent);
+    border-radius: 20px;
+    padding: 2.2rem;
+    border: 1px solid rgba(126,200,227,0.2);
+    transition: transform 0.28s, box-shadow 0.28s;
+    position: relative;
+    overflow: hidden;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: rgba(33,150,196,0.06);
+  }
+  .feature-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(33,150,196,0.12); }
+  .feature-icon {
+    width: 54px; height: 54px;
+    background: linear-gradient(135deg, var(--sky-deep), var(--sky-mid));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 1.3rem;
+    font-size: 1.5rem;
+  }
+  .feature-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--text-dark);
+    margin-bottom: 0.7rem;
+  }
+  .feature-card p { color: var(--text-mid); font-size: 0.95rem; line-height: 1.7; font-weight: 400; }
+
+  /* ─── SPLIT SECTIONS ─── */
+  .split {
+    display: flex;
+    align-items: center;
+    gap: 5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 4rem 0;
+  }
+  .split.reverse { flex-direction: row-reverse; }
+  .split-text { flex: 1; }
+  .split-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    color: var(--text-dark);
+    margin-bottom: 1.2rem;
+    letter-spacing: -0.02em;
+  }
+  .split-text p {
+    color: var(--text-mid);
+    line-height: 1.8;
+    font-size: 0.97rem;
+    margin-bottom: 1rem;
+    font-weight: 400;
+  }
+  .split-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .illustration {
+    width: 100%;
+    max-width: 420px;
+    height: 320px;
+    border-radius: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Illustration 1 - Editor */
+  .illus-editor {
+    background: linear-gradient(135deg, #e8f7fd, #c5e9f7);
+  }
+  .illus-editor .editor-window {
+    position: absolute;
+    inset: 20px;
+    background: var(--white);
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(33,150,196,0.18);
+    overflow: hidden;
+  }
+  .editor-bar { height: 36px; background: var(--sky-dark); display: flex; align-items: center; padding: 0 14px; gap: 7px; }
+  .editor-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .editor-body { padding: 16px; }
+  .editor-line {
+    height: 10px; border-radius: 5px;
+    background: linear-gradient(90deg, var(--sky-light), transparent);
+    margin-bottom: 10px;
+  }
+  .editor-line.short { width: 55%; }
+  .editor-line.medium { width: 80%; }
+  .editor-line.long { width: 95%; }
+  .editor-cursor { width: 2px; height: 16px; background: var(--sky-deep); display: inline-block; animation: blink 1s infinite; border-radius: 1px; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  /* Illustration 2 - Infrastructure */
+  .illus-infra { background: linear-gradient(135deg, #0d4f6e, #1a7099); }
+  .node {
+    position: absolute;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+    border: 2px solid rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+    color: white;
+  }
+  .node-line {
+    position: absolute;
+    height: 2px;
+    background: rgba(255,255,255,0.15);
+    transform-origin: left center;
+  }
+  .pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid rgba(126,200,227,0.3);
+    animation: pulse 3s ease-out infinite;
+  }
+  @keyframes pulse { 0%{opacity:1;transform:scale(1)} 100%{opacity:0;transform:scale(2.2)} }
+
+  /* Illustration 3 - Analytics */
+  .illus-analytics { background: linear-gradient(135deg, #e8f7fd, #b8e4f5); }
+  .chart-bar {
+    position: absolute;
+    bottom: 30px;
+    border-radius: 6px 6px 0 0;
+    background: linear-gradient(to top, var(--sky-deep), var(--sky-mid));
+    transition: height 1s ease;
+  }
+
+  /* ─── DARK SECTION ─── */
+  .dark-section {
+    background: linear-gradient(135deg, var(--sky-dark) 0%, var(--sky-deep) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .dark-section::before, .dark-section::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .dark-section::before { width: 500px; height: 500px; top: -200px; right: -150px; }
+  .dark-section::after  { width: 300px; height: 300px; bottom: -100px; left: -80px; }
+  .dark-section .section-title { color: var(--white); }
+  .dark-section .split-text h2 { color: var(--white); }
+  .dark-section .split-text p  { color: rgba(255,255,255,0.72); }
+
+  /* ─── STATS ─── */
+  .stats-section {
+    background: var(--accent);
+    border-top: 1px solid rgba(126,200,227,0.2);
+    border-bottom: 1px solid rgba(126,200,227,0.2);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 2rem;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .stat-item h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    color: var(--sky-deep);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .stat-item p { color: var(--text-mid); margin-top: 0.4rem; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    background: var(--white);
+    text-align: center;
+  }
+  .cta-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    color: var(--text-dark);
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+  }
+  .cta-section p { color: var(--text-mid); font-size: 1.05rem; margin-bottom: 2.5rem; font-weight: 300; }
+  .cta-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--sky-deep), var(--sky-dark));
+    color: var(--white);
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.25s;
+    box-shadow: 0 8px 28px rgba(33,150,196,0.3);
+  }
+  .cta-btn:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(33,150,196,0.4); }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--sky-hero);
+    color: rgba(255,255,255,0.65);
+    padding: 4rem 5vw 2.5rem;
+  }
+  .footer-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr 1fr 1fr;
+    gap: 3rem;
+    padding-bottom: 3rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .footer-brand .nav-logo { display: block; margin-bottom: 0.5rem; }
+  .footer-col h4 { color: var(--white); font-size: 0.88rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.2rem; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.7rem; }
+  .footer-col ul li a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+  .footer-col ul li a:hover { color: var(--white); }
+  .footer-bottom { max-width: 1100px; margin: 2rem auto 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; flex-wrap: wrap; gap: 0.75rem; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .split, .split.reverse { flex-direction: column; gap: 2.5rem; }
+    .illustration { max-width: 100%; }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .footer-brand { grid-column: 1/-1; }
+  }
+  @media (max-width: 650px) {
+    nav .nav-links, nav .nav-cta { display: none; }
+    .hamburger { display: flex; }
+    .footer-inner { grid-template-columns: 1fr; }
+  }
+
+  /* Scroll reveal */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a href="#" class="nav-logo">blogr</a>
+
+  <ul class="nav-links" id="desktopNav">
+    <li class="has-dropdown">
+      <button class="dropdown-trigger" aria-expanded="false">Product <span class="chevron"></span></button>
+      <ul class="dropdown" role="menu">
+        <li><a href="#">Overview</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Marketplace</a></li>
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Integrations</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <button class="dropdown-trigger" aria-expanded="false">Company <span class="chevron"></span></button>
+      <ul class="dropdown" role="menu">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Team</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+      </ul>
+    </li>
+    <li class="has-dropdown">
+      <button class="dropdown-trigger" aria-expanded="false">Connect <span class="chevron"></span></button>
+      <ul class="dropdown" role="menu">
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Newsletter</a></li>
+        <li><a href="#">LinkedIn</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="nav-cta">
+    <a href="#">Login</a>
+    <a href="#" class="btn-signup">Sign Up</a>
+  </div>
+
+  <button class="hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu" role="dialog" aria-modal="true">
+  <div class="mobile-menu-card">
+    <ul>
+      <li>
+        <button class="m-toggle" aria-expanded="false">Product <span class="chevron" style="border-color:var(--sky-deep)"></span></button>
+        <div class="m-dropdown">
+          <a href="#">Overview</a><a href="#">Pricing</a><a href="#">Marketplace</a>
+          <a href="#">Features</a><a href="#">Integrations</a>
+        </div>
+      </li>
+      <li>
+        <button class="m-toggle" aria-expanded="false">Company <span class="chevron" style="border-color:var(--sky-deep)"></span></button>
+        <div class="m-dropdown">
+          <a href="#">About</a><a href="#">Team</a><a href="#">Blog</a><a href="#">Careers</a>
+        </div>
+      </li>
+      <li>
+        <button class="m-toggle" aria-expanded="false">Connect <span class="chevron" style="border-color:var(--sky-deep)"></span></button>
+        <div class="m-dropdown">
+          <a href="#">Contact</a><a href="#">Newsletter</a><a href="#">LinkedIn</a>
+        </div>
+      </li>
+    </ul>
+    <div class="mobile-cta">
+      <a href="#">Login</a>
+      <a href="#" class="btn-m-signup">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-circle"></div>
+    <div class="hero-circle"></div>
+    <div class="hero-circle"></div>
+    <svg class="hero-waves" viewBox="0 0 1440 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,80 C360,130 1080,20 1440,80 L1440,130 L0,130 Z" fill="white" fill-opacity="0.06"/>
+      <path d="M0,100 C480,50 960,140 1440,90 L1440,130 L0,130 Z" fill="white" fill-opacity="1"/>
+    </svg>
+  </div>
+  <div class="hero-content">
+    <h1>A Modern Publishing<br>Platform</h1>
+    <p>Grow your audience and build your online brand whatever your purpose. Start for free, no credit card required.</p>
+    <div class="hero-btns">
+      <a href="#" class="btn-primary">Start for Free</a>
+      <a href="#" class="btn-outline">Learn More</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── DESIGNED FOR ── -->
+<section>
+  <h2 class="section-title reveal">Designed for the <span>future</span></h2>
+  <div class="split reveal">
+    <div class="split-text">
+      <h2>Introducing an all-new writing experience</h2>
+      <p>Blogr combines a beautiful editor experience with powerful publishing tools and analytics. Write with focus, publish with confidence.</p>
+      <p>Our rich text editor is fast, intuitive, and distraction-free. Format your writing with ease using our clean toolbar, markdown shortcuts, and live preview.</p>
+      <h2 style="margin-top:2rem;">Robust content management</h2>
+      <p>Flexible content scheduling, draft versioning, and tag-based organisation let you manage an extensive library of posts with zero friction.</p>
+      <p>From personal journals to professional publications — Blogr scales with you beautifully.</p>
+    </div>
+    <div class="split-visual">
+      <div class="illustration illus-editor">
+        <div class="editor-window">
+          <div class="editor-bar">
+            <div class="editor-dot" style="background:#ff6b6b"></div>
+            <div class="editor-dot" style="background:#ffd93d"></div>
+            <div class="editor-dot" style="background:#6bcb77"></div>
+          </div>
+          <div class="editor-body">
+            <div class="editor-line short" style="height:14px;background:linear-gradient(90deg,#0d4f6e33,transparent);margin-bottom:18px;width:40%"></div>
+            <div class="editor-line long"></div>
+            <div class="editor-line medium"></div>
+            <div class="editor-line long"></div>
+            <div class="editor-line short"></div>
+            <br>
+            <div class="editor-line medium"></div>
+            <div class="editor-line long"></div>
+            <div style="display:flex;align-items:center;margin-top:10px;gap:4px">
+              <div class="editor-line" style="width:120px;margin:0"></div>
+              <div class="editor-cursor"></div>
+            </div>
+          </div>
+        </div>
+        <div style="position:absolute;bottom:14px;right:16px;background:var(--sky-deep);color:white;font-size:0.72rem;font-weight:700;padding:5px 14px;border-radius:20px;font-family:'Nunito Sans',sans-serif">Publish →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── DARK – STATE OF THE ART ── -->
+<section class="dark-section">
+  <h2 class="section-title reveal">State of the Art <span style="color:var(--sky-mid)">Infrastructure</span></h2>
+  <div class="split reverse reveal">
+    <div class="split-text">
+      <h2>With reliability at our core</h2>
+      <p>When you publish on Blogr, your content is distributed across a global CDN with 99.99% uptime SLA. Your readers always get a lightning-fast experience.</p>
+      <p>Automatic backups, redundant data storage, and enterprise-grade encryption keep your writing safe — always. Focus on creating; we handle the rest.</p>
+    </div>
+    <div class="split-visual">
+      <div class="illustration illus-infra" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1)">
+        <!-- Nodes -->
+        <div class="pulse-ring" style="width:120px;height:120px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+        <div class="pulse-ring" style="width:120px;height:120px;top:50%;left:50%;transform:translate(-50%,-50%);animation-delay:1s"></div>
+        <div class="node" style="top:50%;left:50%;transform:translate(-50%,-50%);background:var(--sky-deep);border-color:var(--sky-mid);width:60px;height:60px;font-size:1.4rem">☁</div>
+        <div class="node" style="top:14%;left:14%">🌏</div>
+        <div class="node" style="top:14%;right:14%">🌍</div>
+        <div class="node" style="bottom:14%;left:14%">🌎</div>
+        <div class="node" style="bottom:14%;right:14%">⚡</div>
+        <div class="node" style="top:50%;left:8%;transform:translateY(-50%)">💾</div>
+        <div class="node" style="top:50%;right:8%;transform:translateY(-50%)">🔒</div>
+        <!-- lines as pseudo SVG inline -->
+        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.2" xmlns="http://www.w3.org/2000/svg">
+          <line x1="50%" y1="50%" x2="20%" y2="22%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="50%" y1="50%" x2="80%" y2="22%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="50%" y1="50%" x2="20%" y2="78%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="50%" y1="50%" x2="80%" y2="78%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="50%" y1="50%" x2="12%" y2="50%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+          <line x1="50%" y1="50%" x2="88%" y2="50%" stroke="white" stroke-width="1.5" stroke-dasharray="4,4"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FREE, OPEN, SIMPLE ── -->
+<section>
+  <h2 class="section-title reveal">Free, <span>open</span>, simple</h2>
+  <div class="split reveal">
+    <div class="split-text">
+      <h2>Flexible pricing for individuals and teams</h2>
+      <p>Whether you're a solo blogger or leading a team of writers, Blogr has the right plan for you. Our generous free tier lets you get started without a credit card.</p>
+      <p>Upgrade anytime to unlock unlimited posts, custom domains, advanced analytics, and priority support — all at transparent, predictable pricing.</p>
+    </div>
+    <div class="split-visual">
+      <div class="illustration illus-analytics">
+        <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 380 280" xmlns="http://www.w3.org/2000/svg">
+          <!-- Grid lines -->
+          <line x1="40" y1="240" x2="360" y2="240" stroke="#2196c430" stroke-width="1"/>
+          <line x1="40" y1="190" x2="360" y2="190" stroke="#2196c420" stroke-width="1"/>
+          <line x1="40" y1="140" x2="360" y2="140" stroke="#2196c420" stroke-width="1"/>
+          <line x1="40" y1="90" x2="360" y2="90" stroke="#2196c420" stroke-width="1"/>
+          <line x1="40" y1="40" x2="360" y2="40" stroke="#2196c415" stroke-width="1"/>
+          <!-- Bars -->
+          <rect x="55" y="180" width="32" height="60" rx="5" fill="url(#barGrad)"/>
+          <rect x="105" y="140" width="32" height="100" rx="5" fill="url(#barGrad)"/>
+          <rect x="155" y="100" width="32" height="140" rx="5" fill="url(#barGrad)"/>
+          <rect x="205" y="70" width="32" height="170" rx="5" fill="url(#barGrad)"/>
+          <rect x="255" y="50" width="32" height="190" rx="5" fill="url(#barGrad)"/>
+          <rect x="305" y="30" width="32" height="210" rx="5" fill="url(#barGrad)"/>
+          <!-- Trend line -->
+          <polyline points="71,175 121,135 171,95 221,65 271,45 321,25" fill="none" stroke="#0d4f6e" stroke-width="2.5" stroke-dasharray="5,4" opacity="0.5"/>
+          <defs>
+            <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#2196c4"/>
+              <stop offset="100%" stop-color="#7ec8e3"/>
+            </linearGradient>
+          </defs>
+          <!-- Labels -->
+          <text x="71" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">Jan</text>
+          <text x="121" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">Feb</text>
+          <text x="171" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">Mar</text>
+          <text x="221" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">Apr</text>
+          <text x="271" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">May</text>
+          <text x="321" y="258" text-anchor="middle" font-size="9" fill="#4a7a94" font-family="Nunito Sans,sans-serif">Jun</text>
+          <text x="20" y="244" text-anchor="middle" font-size="8" fill="#8ab8cc" font-family="Nunito Sans,sans-serif">0</text>
+          <text x="20" y="144" text-anchor="middle" font-size="8" fill="#8ab8cc" font-family="Nunito Sans,sans-serif">5k</text>
+          <text x="14" y="44" text-anchor="middle" font-size="8" fill="#8ab8cc" font-family="Nunito Sans,sans-serif">10k</text>
+        </svg>
+        <!-- Badge -->
+        <div style="position:absolute;top:16px;right:16px;background:white;border-radius:12px;padding:8px 14px;box-shadow:0 4px 16px rgba(33,150,196,0.15);font-family:'Nunito Sans',sans-serif">
+          <div style="font-size:0.7rem;color:var(--text-mid);text-transform:uppercase;letter-spacing:.05em;font-weight:700">Readers</div>
+          <div style="font-size:1.2rem;color:var(--sky-deep);font-weight:700;font-family:'Playfair Display',serif">↑ 48%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature cards -->
+  <div class="features-grid reveal" style="margin-top:4rem">
+    <div class="feature-card">
+      <div class="feature-icon">✍️</div>
+      <h3>Rich Text Editor</h3>
+      <p>A distraction-free writing environment with markdown support, embeds, and real-time collaboration built in.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <h3>Deep Analytics</h3>
+      <p>Understand your audience with read-time tracking, referral sources, geographic data, and subscriber growth curves.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌐</div>
+      <h3>Custom Domains</h3>
+      <p>Host your blog on your own domain in minutes. Free SSL, automatic renewal, and one-click DNS configuration.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔔</div>
+      <h3>Newsletter Built-In</h3>
+      <p>Turn readers into subscribers instantly. Send beautiful newsletters from the same editor — no third-party tools needed.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔒</div>
+      <h3>Member-Only Content</h3>
+      <p>Gate premium posts, accept payments, and build a subscription community — all without leaving Blogr.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚡</div>
+      <h3>Blazing Performance</h3>
+      <p>Global CDN, sub-second load times, and 99.99% uptime SLA. Your readers get the best experience every single time.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── STATS ── -->
+<section class="stats-section reveal">
+  <h2 class="section-title">Trusted by writers <span>worldwide</span></h2>
+  <div class="stats-grid">
+    <div class="stat-item">
+      <h3>2M+</h3>
+      <p>Active Bloggers</p>
+    </div>
+    <div class="stat-item">
+      <h3>98%</h3>
+      <p>Customer Satisfaction</p>
+    </div>
+    <div class="stat-item">
+      <h3>180+</h3>
+      <p>Countries Reached</p>
+    </div>
+    <div class="stat-item">
+      <h3>4.9★</h3>
+      <p>Average Rating</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA ── -->
+<section class="cta-section reveal">
+  <h2>Start writing today</h2>
+  <p>Join over two million bloggers already sharing their stories on Blogr.</p>
+  <a href="#" class="cta-btn">Get Started for Free</a>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo">blogr</a>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#">Overview</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Marketplace</a></li>
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Integrations</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Team</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Connect</h4>
+      <ul>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Newsletter</a></li>
+        <li><a href="#">LinkedIn</a></li>
+        <li><a href="#">Twitter</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Blogr. All rights reserved.</span>
+    <span>Made with ☁ and Nunito Sans</span>
+  </div>
+</footer>
+
+<script>
+  // ── Desktop dropdowns ──
+  document.querySelectorAll('.has-dropdown').forEach(item => {
+    const btn = item.querySelector('.dropdown-trigger');
+    const menu = item.querySelector('.dropdown');
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isOpen = menu.classList.contains('visible');
+      // close all
+      document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('visible'));
+      document.querySelectorAll('.dropdown-trigger').forEach(b => { b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
+      if (!isOpen) {
+        menu.classList.add('visible');
+        btn.classList.add('open');
+        btn.setAttribute('aria-expanded','true');
+      }
+    });
+  });
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('visible'));
+    document.querySelectorAll('.dropdown-trigger').forEach(b => { b.classList.remove('open'); b.setAttribute('aria-expanded','false'); });
+  });
+
+  // ── Mobile menu ──
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  hamburger.addEventListener('click', () => {
+    const isOpen = mobileMenu.classList.toggle('open');
+    hamburger.classList.toggle('active', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  mobileMenu.addEventListener('click', e => {
+    if (e.target === mobileMenu) {
+      mobileMenu.classList.remove('open');
+      hamburger.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // ── Mobile sub-dropdowns ──
+  document.querySelectorAll('.m-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const dd = btn.nextElementSibling;
+      const isOpen = dd.classList.toggle('open');
+      btn.setAttribute('aria-expanded', isOpen);
+      btn.querySelector('.chevron').style.transform = isOpen ? 'rotate(135deg) translateY(-2px)' : 'rotate(-45deg) translateY(-2px)';
+    });
+  });
+
+  // ── Scroll reveal ──
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
